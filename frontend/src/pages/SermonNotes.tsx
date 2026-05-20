@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
+import toast from 'react-hot-toast';
 import { BookOpen, Search, Plus, Save, Trash2, Edit3, Loader2 } from 'lucide-react';
 
 interface SermonNote {
@@ -31,34 +32,42 @@ export default function SermonNotes() {
   const saveMutation = useMutation({
     mutationFn: async (note: Partial<SermonNote>) => {
       if (note.id) {
-        await api.put(`/sermon-notes/${note.id}`, note);
+        return api.put(`/sermon-notes/${note.id}`, note);
       } else {
-        await api.post('/sermon-notes', note);
+        return api.post('/sermon-notes', note);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sermon-notes'] });
       setIsEditing(false);
-    }
+      toast.success('Note saved!');
+    },
+    onError: () => toast.error('Failed to save note.')
   });
 
   const scriptureLookupMutation = useMutation({
-    mutationFn: async (id: string) => await api.post(`/sermon-notes/${id}/scripture-lookup`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['sermon-notes'] })
+    mutationFn: async (id: string) => api.post(`/sermon-notes/${id}/scripture-lookup`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sermon-notes'] });
+      toast.success('Scripture loaded!');
+    },
+    onError: () => toast.error('Scripture lookup failed.')
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => await api.delete(`/sermon-notes/${id}`),
+    mutationFn: async (id: string) => api.delete(`/sermon-notes/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sermon-notes'] });
       setSelectedNote(null);
-    }
+      toast('Note deleted.', { icon: '🗑️' });
+    },
+    onError: () => toast.error('Failed to delete note.')
   });
 
   const handleNewNote = () => {
     setSelectedNote(null);
     setEditForm({
-      title: 'New Sermon Note',
+      title: '',
       preacherName: '',
       date: new Date().toISOString().split('T')[0],
       scriptureReference: '',

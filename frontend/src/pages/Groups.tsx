@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
+import toast from 'react-hot-toast';
 import { Users, MapPin, Calendar, ArrowRight, Loader2, CheckCircle2, LogOut } from 'lucide-react';
 
 interface Group {
@@ -29,12 +30,20 @@ export default function Groups() {
 
   const joinMutation = useMutation({
     mutationFn: (id: string) => api.post(`/groups/${id}/join`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      toast.success('You joined the group!');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || 'Could not join group.')
   });
 
   const leaveMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/groups/${id}/leave`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['groups'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      toast('Left group.', { icon: '👋' });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || 'Could not leave group.')
   });
 
   const filteredGroups = groups?.filter(g => activeTab === 'all' || g.isMember) || [];

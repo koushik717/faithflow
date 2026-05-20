@@ -38,6 +38,10 @@ public class UserRepository : Repository<User>, IUserRepository
     public async Task<User?> GetByEmailAsync(string email) =>
         await _dbSet.Include(u => u.RefreshTokens).FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
 
+    public async Task<User?> GetByRefreshTokenAsync(string token) =>
+        await _dbSet.Include(u => u.RefreshTokens)
+            .FirstOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == token && !t.IsRevoked && t.ExpiryDate > DateTime.UtcNow));
+
     public async Task<IEnumerable<User>> SearchAsync(string? query, int page, int pageSize)
     {
         var q = _dbSet.AsQueryable();

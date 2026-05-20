@@ -60,22 +60,12 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
     {
-        // Find user with matching non-revoked refresh token
-        var users = await _userRepo.GetAllAsync();
-        User? user = null;
-        RefreshToken? token = null;
+        var user = await _userRepo.GetByRefreshTokenAsync(refreshToken)
+            ?? throw new UnauthorizedException("Invalid or expired refresh token.");
 
-        foreach (var u in users)
-        {
-            token = u.RefreshTokens?.FirstOrDefault(t =>
-                t.Token == refreshToken && !t.IsRevoked && t.ExpiryDate > DateTime.UtcNow);
-            if (token != null) { user = u; break; }
-        }
+        var token = user.RefreshTokens.First(t =>
+            t.Token == refreshToken && !t.IsRevoked && t.ExpiryDate > DateTime.UtcNow);
 
-        if (user == null || token == null)
-            throw new UnauthorizedException("Invalid or expired refresh token.");
-
-        // Revoke old token
         token.IsRevoked = true;
         await _userRepo.UpdateAsync(user);
 
@@ -106,7 +96,7 @@ public class AuthService : IAuthService
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken.Token,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            ExpiresAt = _tokenService.GetAccessTokenExpiry(),
             User = MapToDto(user)
         };
     }

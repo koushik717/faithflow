@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
+import toast from 'react-hot-toast';
 import { Calendar, Clock, MapPin, CheckCircle2, Loader2, XCircle, HeartHandshake } from 'lucide-react';
 
 interface Opportunity {
@@ -29,12 +30,20 @@ export default function Volunteer() {
 
   const signupMutation = useMutation({
     mutationFn: (id: string) => api.post(`/volunteer/opportunities/${id}/signup`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['opportunities'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+      toast.success('You\'re signed up to serve!');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || 'Could not sign up.')
   });
 
   const cancelMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/volunteer/opportunities/${id}/cancel`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['opportunities'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+      toast('Signup cancelled.', { icon: '↩️' });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.error || 'Could not cancel.')
   });
 
   const filteredOpps = opportunities?.filter(opp => activeTab === 'all' || opp.isSignedUp) || [];

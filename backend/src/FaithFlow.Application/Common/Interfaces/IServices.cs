@@ -14,6 +14,7 @@ public interface ITokenService
 {
     string GenerateAccessToken(User user);
     RefreshToken GenerateRefreshToken(Guid userId);
+    DateTime GetAccessTokenExpiry();
 }
 
 public interface IGeminiService

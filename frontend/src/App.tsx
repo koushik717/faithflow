@@ -1,5 +1,5 @@
 import { Toaster } from 'react-hot-toast';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useEffect } from 'react';
@@ -19,6 +19,21 @@ import Groups from './pages/Groups';
 import Volunteer from './pages/Volunteer';
 import SermonNotes from './pages/SermonNotes';
 import Admin from './pages/Admin';
+
+function NotFound() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-surface text-center px-4">
+      <div className="glass p-12 rounded-3xl max-w-md w-full">
+        <p className="text-8xl font-black text-primary/20 mb-4">404</p>
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">Page not found</h1>
+        <p className="text-slate-500 mb-8">The page you're looking for doesn't exist or has been moved.</p>
+        <Link to="/" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-2xl font-bold hover:bg-primary-600 transition-colors">
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 function RoleGuard({ children, requiredRole }: { children: React.ReactNode; requiredRole: string }) {
   const { user, isLoading } = useAuthStore();
@@ -72,6 +87,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
           
           <Route path="/" element={
             <ProtectedRoute>

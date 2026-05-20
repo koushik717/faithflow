@@ -42,6 +42,12 @@ public class TokenService : ITokenService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public DateTime GetAccessTokenExpiry()
+    {
+        var minutes = int.Parse(_config["JwtSettings:AccessTokenExpirationMinutes"] ?? "15");
+        return DateTime.UtcNow.AddMinutes(minutes);
+    }
+
     public RefreshToken GenerateRefreshToken(Guid userId)
     {
         var randomBytes = new byte[64];
