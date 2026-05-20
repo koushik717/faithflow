@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FaithFlow.API/FaithFlow.API.csproj" />
+    <Project Path="src/FaithFlow.Application/FaithFlow.Application.csproj" />
+    <Project Path="src/FaithFlow.Domain/FaithFlow.Domain.csproj" />
+    <Project Path="src/FaithFlow.Infrastructure/FaithFlow.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FaithFlow.IntegrationTests/FaithFlow.IntegrationTests.csproj" />
+    <Project Path="tests/FaithFlow.UnitTests/FaithFlow.UnitTests.csproj" />
+  </Folder>
+</Solution>

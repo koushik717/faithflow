@@ -1,0 +1,56 @@
+# =========================
+# .NET / C#
+# =========================
+backend/**/bin/
+backend/**/obj/
+backend/**/.vs/
+backend/**/*.user
+backend/**/*.suo
+backend/**/*.cache
+backend/**/project.lock.json
+backend/**/TestResults/
+
+# =========================
+# Node.js / Frontend
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+frontend/coverage/
+frontend/*.tsbuildinfo
+
+# =========================
+# Environment
+# =========================
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+logs/
+
+# =========================
+# OS
+# =========================
+.DS_Store
+*.DS_Store

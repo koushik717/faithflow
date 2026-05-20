@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "5227:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - JwtSettings__Secret=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLong!}
+      - GoogleAI__ApiKey=${GOOGLE_API_KEY:-}
+    networks:
+      - faithflow-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - faithflow-network
+
+networks:
+  faithflow-network:
+    driver: bridge

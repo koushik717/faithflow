@@ -1,0 +1,43 @@
+name: faithflow
+region: nyc
+
+services:
+  - name: api
+    dockerfile_path: backend/Dockerfile
+    source_dir: /
+    github:
+      repo: koushik717/faithflow
+      branch: main
+      deploy_on_push: true
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 30
+      period_seconds: 30
+    envs:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:8080
+      - key: ConnectionStrings__DefaultConnection
+        scope: RUN_TIME
+        type: SECRET
+      - key: JwtSettings__Secret
+        scope: RUN_TIME
+        type: SECRET
+      - key: JwtSettings__Issuer
+        value: FaithFlowAPI
+      - key: JwtSettings__Audience
+        value: FaithFlowClients
+      - key: JwtSettings__ExpiryMinutes
+        value: "60"
+      - key: GoogleAI__ApiKey
+        scope: RUN_TIME
+        type: SECRET
+      # Set this to your Vercel frontend URL after deploying frontend
+      # e.g. https://faithflow.vercel.app
+      - key: CorsSettings__Origins
+        scope: RUN_TIME
+        type: SECRET

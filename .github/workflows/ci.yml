@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20'
+
+jobs:
+  # ─── Backend Tests ─────────────────────────────────────────
+  backend:
+    name: Backend (Build + Test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: faithflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test tests/FaithFlow.UnitTests --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=unit-test-results.trx"
+
+      - name: Run integration tests
+        run: dotnet test tests/FaithFlow.IntegrationTests --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=integration-test-results.trx"
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=faithflow_test;Username=test;Password=test"
+          JwtSettings__Secret: "TestSecretKeyThatIsAtLeast32BytesLongForHS256!!"
+          JwtSettings__Issuer: "faithflow-test"
+          JwtSettings__Audience: "faithflow-test"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/**/TestResults/*.trx
+
+  # ─── Frontend Tests ────────────────────────────────────────
+  frontend:
+    name: Frontend (Build + Test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test -- --run
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.faithflow.app/api
+          VITE_SIGNALR_URL: https://api.faithflow.app/hubs
