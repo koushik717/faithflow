@@ -14,30 +14,52 @@ services:
     instance_size_slug: apps-s-1vcpu-0.5gb
     health_check:
       http_path: /health
-      initial_delay_seconds: 30
+      initial_delay_seconds: 60
       period_seconds: 30
     envs:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
+        scope: RUN_TIME
       - key: ASPNETCORE_URLS
         value: http://+:8080
-      - key: ConnectionStrings__DefaultConnection
         scope: RUN_TIME
-        type: SECRET
       - key: JwtSettings__Secret
+        value: "F7Gait/rWhiXGIQjKMRzSNfnTNajHngG+FwHPHEe5iYiZt4KAoek0dQct1+IPZ3q"
         scope: RUN_TIME
         type: SECRET
       - key: JwtSettings__Issuer
         value: FaithFlowAPI
+        scope: RUN_TIME
       - key: JwtSettings__Audience
         value: FaithFlowClients
-      - key: JwtSettings__ExpiryMinutes
+        scope: RUN_TIME
+      - key: JwtSettings__AccessTokenExpirationMinutes
         value: "60"
+        scope: RUN_TIME
+      - key: JwtSettings__RefreshTokenExpirationDays
+        value: "7"
+        scope: RUN_TIME
       - key: GoogleAI__ApiKey
+        value: "AIzaSyCNfU0vmemQoVbaqSqWxbC9H17ZaZ9noBE"
         scope: RUN_TIME
         type: SECRET
-      # Set this to your Vercel frontend URL after deploying frontend
-      # e.g. https://faithflow.vercel.app
       - key: CorsSettings__Origins
+        value: ${frontend.PUBLIC_URL}
         scope: RUN_TIME
-        type: SECRET
+
+static_sites:
+  - name: frontend
+    source_dir: frontend
+    build_command: npm run build
+    output_dir: dist
+    github:
+      repo: koushik717/faithflow
+      branch: main
+      deploy_on_push: true
+    envs:
+      - key: VITE_API_URL
+        value: ${api.PUBLIC_URL}/api
+        scope: BUILD_TIME
+      - key: VITE_SIGNALR_URL
+        value: ${api.PUBLIC_URL}
+        scope: BUILD_TIME
