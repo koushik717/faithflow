@@ -16,6 +16,15 @@ services:
       http_path: /health
       initial_delay_seconds: 60
       period_seconds: 30
+    routes:
+      - path: /api
+        preserve_path_prefix: true
+      - path: /hubs
+        preserve_path_prefix: true
+      - path: /health
+        preserve_path_prefix: false
+      - path: /swagger
+        preserve_path_prefix: true
     envs:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
@@ -44,7 +53,7 @@ services:
         scope: RUN_TIME
         type: SECRET
       - key: CorsSettings__Origins
-        value: ${frontend.PUBLIC_URL}
+        value: ${APP_URL}
         scope: RUN_TIME
 
 static_sites:
@@ -52,14 +61,16 @@ static_sites:
     source_dir: frontend
     build_command: npm run build
     output_dir: dist
+    routes:
+      - path: /
     github:
       repo: koushik717/faithflow
       branch: main
       deploy_on_push: true
     envs:
       - key: VITE_API_URL
-        value: ${api.PUBLIC_URL}/api
+        value: ${APP_URL}/api
         scope: BUILD_TIME
       - key: VITE_SIGNALR_URL
-        value: ${api.PUBLIC_URL}
+        value: ${APP_URL}
         scope: BUILD_TIME
